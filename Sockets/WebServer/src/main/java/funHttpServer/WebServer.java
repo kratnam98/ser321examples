@@ -25,6 +25,10 @@ import java.util.Random;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.nio.charset.Charset;
+import org.json.JSONArray;
+import org.json.JSONObject;
+//import org.json.simple.parser.*;
+
 
 class WebServer {
   public static void main(String args[]) {
@@ -201,9 +205,47 @@ class WebServer {
           // extract path parameters
           query_pairs = splitQuery(request.replace("multiply?", ""));
 
+        String one = query_pairs.get("num1");
+        String two = query_pairs.get("num2");
+
+        try{
+
+        int oneLen = one.length();
+        int twoLen = two.length();
+
+        if((oneLen != 1) || (twoLen != 1))
+        {
+          builder.append("HTTP/1.1 400 Bad Request\n");
+          builder.append("Content-Type: text/html; charset=utf-8\n");
+          builder.append("\n");
+          builder.append("I am not sure what you want me to do...");
+        }
+
+        char oneC = one.charAt(0);
+        char twoC = two.charAt(0);
+
+        if(!(Character.isDigit(oneC)))
+        {
+          builder.append("HTTP/1.1 400 Bad Request\n");
+          builder.append("Content-Type: text/html; charset=utf-8\n");
+          builder.append("\n");
+          builder.append("I am not sure what you want me to do...");
+        }
+        if(!(Character.isDigit(twoC)))
+        {
+          builder.append("HTTP/1.1 400 Bad Request\n");
+          builder.append("Content-Type: text/html; charset=utf-8\n");
+          builder.append("\n");
+          builder.append("I am not sure what you want me to do...");
+        }
+
           // extract required fields from parameters
-          Integer num1 = Integer.parseInt(query_pairs.get("num1"));
-          Integer num2 = Integer.parseInt(query_pairs.get("num2"));
+          //Integer num1 = Integer.parseInt(query_pairs.get("num1"));
+          //Integer num2 = Integer.parseInt(query_pairs.get("num2"));
+
+
+          int num1 = Integer.parseInt(String.valueOf(oneC));
+          int num2 = Integer.parseInt(String.valueOf(twoC));
 
           // do math
           Integer result = num1 * num2;
@@ -216,7 +258,10 @@ class WebServer {
 
           // TODO: Include error handling here with a correct error code and
           // a response that makes sense
-
+        }catch (Exception e) {
+          e.printStackTrace();
+          response = ("<html>ERROR: " + e.getMessage() + "</html>").getBytes();
+        }
         } else if (request.contains("github?")) {
           // pulls the query from the request and runs it with GitHub's REST API
           // check out https://docs.github.com/rest/reference/
@@ -228,10 +273,47 @@ class WebServer {
 
           Map<String, String> query_pairs = new LinkedHashMap<String, String>();
           query_pairs = splitQuery(request.replace("github?", ""));
-          String json = fetchURL("https://api.github.com/" + query_pairs.get("query"));
-          System.out.println(json);
+          String json = fetchURL("https://api.github.com/users/" + query_pairs.get("query")+"/repos");
+          //System.out.println(json);
 
           builder.append("Check the todos mentioned in the Java source file");
+
+          String newJ = json.replace("[", "");
+          String newJ2 = newJ.replace("]", "");
+
+          JSONObject obj = new JSONObject(newJ2);
+          JSONArray jsonArr = new JSONArray(json);
+
+          //JSONArray newarr = obj.getJSONArray("owner");
+
+          //JSONObject jsonChild = (JSONObject)jsonObject.get...
+
+          //Iterator iterator = obj.keys();
+          String finalS= "";
+          //JSONArray Array = obj.getJSONArray();
+          for(int i = 0; i < jsonArr.length(); i++){
+            //System.out.println(jsonArr.getJSONObject(i).getString("id"));
+            System.out.println(jsonArr.length());
+            Object newsss = jsonArr.getJSONObject(i).get("id");
+            Object newss = jsonArr.getJSONObject(i).get("name");
+
+            //String lll = jsonArr.getJSONObject(i).getString("id");
+            //String mmm = jsonArr.getJSONObject(i).getString("name");
+
+            String idTO = String.valueOf(newsss);
+            String nameTO = String.valueOf(newss);
+            String names = query_pairs.get("query");
+            finalS = finalS + names + ", " + idTO + " -> " + nameTO + "\n";
+
+            //Object newsss = jsonArr.getJSONObject(i).get("id");
+            //Object newss = obj.get("id");
+            System.out.println(idTO);
+            System.out.println(nameTO);
+          }
+          System.out.println(finalS);
+          
+
+
           // TODO: Parse the JSON returned by your fetch and create an appropriate
           // response
           // and list the owner name, owner id and name of the public repo on your webpage, e.g.
