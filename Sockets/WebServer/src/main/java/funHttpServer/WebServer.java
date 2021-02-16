@@ -208,56 +208,53 @@ class WebServer {
         String one = query_pairs.get("num1");
         String two = query_pairs.get("num2");
 
+
+
         try{
 
-        int oneLen = one.length();
-        int twoLen = two.length();
+          int oneLen = one.length();
+          int twoLen = two.length();
+          int tru = 0;
+          for(int j = 0; j < one.length(); j++)
+          {
+            if(!(Character.isDigit(one.charAt(j))))
+            {
+              tru++;
+            }
+          }
+          for(int j = 0; j < two.length(); j++)
+          {
+            if(!(Character.isDigit(two.charAt(j))))
+            {
+              tru++;
+            }
+          }
+            if(tru==0)
+            {
+              int num1 = Integer.parseInt(String.valueOf(one));
+              int num2 = Integer.parseInt(String.valueOf(two));
 
-        if((oneLen != 1) || (twoLen != 1))
-        {
-          builder.append("HTTP/1.1 400 Bad Request\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append("I am not sure what you want me to do...");
-        }
+              // do math
+              Integer result = num1 * num2;
 
-        char oneC = one.charAt(0);
-        char twoC = two.charAt(0);
+              // Generate response
+              builder.append("HTTP/1.1 200 OK\n");
+              builder.append("Content-Type: text/html; charset=utf-8\n");
+              builder.append("\n");
+              builder.append("Result is: " + result);
+            }
+            else{
+              builder.append("HTTP/1.1 400 Bad Request\n");
+              builder.append("Content-Type: text/html; charset=utf-8\n");
+              builder.append("\n");
+              builder.append("ERROR 400\n\n");
+              builder.append('\n');
+              builder.append("\n\nGiven inputs\n not accepted");
+              response = ("<html>ERROR: " + "</html>").getBytes();
+            }
 
-        if(!(Character.isDigit(oneC)))
-        {
-          builder.append("HTTP/1.1 400 Bad Request\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append("I am not sure what you want me to do...");
-        }
-        if(!(Character.isDigit(twoC)))
-        {
-          builder.append("HTTP/1.1 400 Bad Request\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append("I am not sure what you want me to do...");
-        }
-
-          // extract required fields from parameters
-          //Integer num1 = Integer.parseInt(query_pairs.get("num1"));
-          //Integer num2 = Integer.parseInt(query_pairs.get("num2"));
-
-
-          int num1 = Integer.parseInt(String.valueOf(oneC));
-          int num2 = Integer.parseInt(String.valueOf(twoC));
-
-          // do math
-          Integer result = num1 * num2;
-
-          // Generate response
-          builder.append("HTTP/1.1 200 OK\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append("Result is: " + result);
-
-          // TODO: Include error handling here with a correct error code and
-          // a response that makes sense
+            // TODO: Include error handling here with a correct error code and
+            // a response that makes sense
         }catch (Exception e) {
           e.printStackTrace();
           response = ("<html>ERROR: " + e.getMessage() + "</html>").getBytes();
@@ -274,46 +271,35 @@ class WebServer {
           Map<String, String> query_pairs = new LinkedHashMap<String, String>();
           query_pairs = splitQuery(request.replace("github?", ""));
           String json = fetchURL("https://api.github.com/users/" + query_pairs.get("query")+"/repos");
-          //System.out.println(json);
 
-          builder.append("Check the todos mentioned in the Java source file");
+          //builder.append("Check the todos mentioned in the Java source file");
 
           String newJ = json.replace("[", "");
           String newJ2 = newJ.replace("]", "");
 
-          JSONObject obj = new JSONObject(newJ2);
+          //JSONObject obj = new JSONObject(newJ2);
           JSONArray jsonArr = new JSONArray(json);
-
-          //JSONArray newarr = obj.getJSONArray("owner");
-
-          //JSONObject jsonChild = (JSONObject)jsonObject.get...
-
-          //Iterator iterator = obj.keys();
           String finalS= "";
           //JSONArray Array = obj.getJSONArray();
+          builder.append("HTTP/1.1 200 OK\n");
+          builder.append("Content-Type: text/html; charset=utf-8\n");
+          builder.append("\n");
           for(int i = 0; i < jsonArr.length(); i++){
-            //System.out.println(jsonArr.getJSONObject(i).getString("id"));
             System.out.println(jsonArr.length());
             Object newsss = jsonArr.getJSONObject(i).get("id");
             Object newss = jsonArr.getJSONObject(i).get("name");
-
-            //String lll = jsonArr.getJSONObject(i).getString("id");
-            //String mmm = jsonArr.getJSONObject(i).getString("name");
 
             String idTO = String.valueOf(newsss);
             String nameTO = String.valueOf(newss);
             String names = query_pairs.get("query");
             finalS = finalS + names + ", " + idTO + " -> " + nameTO + "\n";
-
-            //Object newsss = jsonArr.getJSONObject(i).get("id");
-            //Object newss = obj.get("id");
+            String curr = names + ", " + idTO + " -> " + nameTO;
+            builder.append(curr);
             System.out.println(idTO);
             System.out.println(nameTO);
           }
           System.out.println(finalS);
-          
-
-
+          builder.append("hello");
           // TODO: Parse the JSON returned by your fetch and create an appropriate
           // response
           // and list the owner name, owner id and name of the public repo on your webpage, e.g.
